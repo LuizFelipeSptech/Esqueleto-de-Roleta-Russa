@@ -1,6 +1,6 @@
-  # Esqueleto-de-Roleta-Russa
-Esqueleto de jogo de Roleta-russa baseado em BuskShot
-Jogo rápido feito apenas com HTML e Javascript com intuito de treinar o básico de lógica e explorar a linguagem.
+# Esqueleto-de-Roleta-Russa 
+Esqueleto de jogo de Roleta-russa baseado em BuskShot 
+Jogo rápido feito apenas com HTML e Javascript com intuito de treinar o básico de lógica e explorar a linguagem. 
 As sintaxes de Javascript:
 * .join
 * .slice
