@@ -1,0 +1,166 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link rel="stylesheet" href="style.css">
+    <title>BuckShot</title>
+</head>
+
+<body>
+    <header style="text-align: center;">
+        <h1>BuckShot</h1>
+        <p>Ao clicar em "Começar" será exibido, por 3 segundos, as balas que estaram na arma, sendo que as vermelhas são
+            balas verdadeiras e as azuis balas falsas. Assim, você poderá escolher entre atirar em si mesmo ou em seu
+            inimigo.</p>
+        <p>Caso atire em si mesmo e a munição que estiver na arma for falsa, você podera jogar novamente, caso a bala
+            for verdadeira, você morre.</p>
+        <p>Caso atire em seu inimigo, se a bala for verdadeira, ele morrera, caso não, sera a vez dele fazer a escolha
+            de atirar em si mesmo, ou te balear.</p>
+        <hr>
+    </header>
+    <main>
+        <div id="mostrarBalas" style="display: flex;flex-direction: row;justify-content: center;gap: 2px;">
+            <button onclick="definirBalas()">Começar</button>
+            <!-- `<img src="img/redBullet.png" height="200px">`
+            `<img src="img/blueBullet.png" height="200px">` -->
+            <!-- <button onclick="selfShot()">Atirar em si mesmo</button>
+            <button onclick="killHe()">Atirar no inimigo</button> -->
+        </div>
+        <div id="fraseResultadoTiro" style="text-align: center;">
+            <!-- <button onclick="resetGame()">Resetar</button> -->
+        </div>
+    </main>
+</body>
+
+</html>
+
+<script>
+    var posicaoBalas = []
+    var balasVerdadeiras = 0
+    var decisao = 69
+    var numeroDeBalas = Math.floor(Math.random() * 6) + 2;
+
+    function resetGame(){
+        posicaoBalas = []
+        balasVerdadeiras = 0
+        decisao = 69
+        numeroDeBalas = Math.floor(Math.random() * 6) + 2;
+        fraseResultadoTiro.innerHTML = ""
+        mostrarBalas.innerHTML = ""
+        definirBalas()
+    }
+
+    function definirBalas() {
+        for (var x = 1; x <= numeroDeBalas; x++) {
+            if ((Math.floor(Math.random() * 2)) == 1) {
+                posicaoBalas.push(1)
+            } else {
+                posicaoBalas.push(0)
+            }
+        }
+        var balasOrganizadas = posicaoBalas.slice().sort()
+        for (var x = 0; x <= numeroDeBalas - 1; x++) {
+            if (balasOrganizadas[x] == 1) {
+                balasOrganizadas[x] = `<img src="img/blueBullet.png" height="200px">`
+            } else {
+                balasOrganizadas[x] = `<img src="img/redBullet.png" height="200px">`
+                balasVerdadeiras++
+            }
+        }
+
+        mostrarBalas.innerHTML =
+            `
+        ${balasOrganizadas.join("")}
+        `
+        setTimeout(() => {
+            shot()
+        }, 3000)
+    }
+    console.log(posicaoBalas)
+    function shot(x) {
+        mostrarBalas.innerHTML =
+            `
+        <button onclick="shot(0)">Atirar em si mesmo</button>
+        <button onclick="shot(1)">Atirar no inimigo</button>
+        `
+        if (x == 0) {
+            if (posicaoBalas[posicaoBalas.length - 1] == 0) {
+                fraseResultadoTiro.innerHTML = '<p>Você Morreu</p><br><button onclick="resetGame()">Resetar</button>'
+                mostrarBalas.innerHTML = ""
+            } else {
+                fraseResultadoTiro.innerHTML = '<p>Bala Falsa... Sua vez novamente</p>'
+                posicaoBalas.pop()
+                console.log(posicaoBalas)
+            }
+        } else if (x == 1) {
+            if (posicaoBalas[posicaoBalas.length - 1] == 0) {
+                fraseResultadoTiro.innerHTML = '<p>A arma atira... Você venceu</p><br><button onclick="resetGame()">Resetar</button>'
+                mostrarBalas.innerHTML = ""
+            } else {
+                fraseResultadoTiro.innerHTML = '<p>Bala Falsa... É... a vez <b>Dele</b>...</p>'
+                mostrarBalas.innerHTML = ""
+                posicaoBalas.pop()
+                console.log(posicaoBalas)
+                setTimeout(() => {
+                    dealerRound()
+                }, 2000)
+            }
+        }
+        if (posicaoBalas.length == 0) {
+            fraseResultadoTiro.innerHTML = "Recarregando Arma..."
+            setTimeout(() => {
+                definirBalas()
+            }, 1000)
+        }
+    }
+    function dealerRound() {
+        fraseResultadoTiro.innerHTML = "<p>Ele pega a arma e começa a pensar...</p>"
+        setTimeout(() => {
+            if (balasVerdadeiras >= (posicaoBalas.length - balasVerdadeiras)) {
+                decisao = 1
+            } else {
+                decisao = 0
+            }
+            fraseResultadoTiro.innerHTML = "<p>A decisão foi tomada</p>"
+        }, 3000)
+        setTimeout(() => {
+            if (decisao == 1) {
+                setTimeout(() => {
+                    fraseResultadoTiro.innerHTML = "<p>Ele aponta a arma para você...</p>"
+                    setTimeout(() => {
+                        if (posicaoBalas[posicaoBalas.length - 1] == 0) {
+                            fraseResultadoTiro.innerHTML = '<p>A arma atira... Você Morreu</p><br><button onclick="resetGame()">Resetar</button>'
+                            mostrarBalas.innerHTML = ""
+                        } else {
+                            fraseResultadoTiro.innerHTML = '<p>Bala Falsa. É sua vez</p>'
+                            mostrarBalas.innerHTML = ""
+                            posicaoBalas.pop()
+                            console.log(posicaoBalas)
+                            setTimeout(() => {
+                                shot()
+                            }, 4000)
+                        }
+                    }, 4000)
+                }, 1000)
+            } else {
+                fraseResultadoTiro.innerHTML = "<p>Ele aponta a arma para a própria cabeça...</p>"
+                setTimeout(() => {
+                    if (posicaoBalas[posicaoBalas.length - 1] == 0) {
+                        fraseResultadoTiro.innerHTML = '<p>A arma dispara... Você venceu</p><br><button onclick="resetGame()">Resetar</button>'
+                        mostrarBalas.innerHTML = ""
+                    } else {
+                        fraseResultadoTiro.innerHTML = '<p>Bala Falsa... Ele joga novamente</p>'
+                        posicaoBalas.pop()
+                        console.log(posicaoBalas)
+                        setTimeout(() => {
+                            dealerRound()
+                        }, 5000);
+                    }
+                }, 4000)
+            }
+        }, 4000)
+    }
+
+</script>
