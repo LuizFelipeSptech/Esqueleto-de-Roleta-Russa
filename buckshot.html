@@ -23,13 +23,8 @@
     <main>
         <div id="mostrarBalas" style="display: flex;flex-direction: row;justify-content: center;gap: 2px;">
             <button onclick="definirBalas()">Começar</button>
-            <!-- `<img src="img/redBullet.png" height="200px">`
-            `<img src="img/blueBullet.png" height="200px">` -->
-            <!-- <button onclick="selfShot()">Atirar em si mesmo</button>
-            <button onclick="killHe()">Atirar no inimigo</button> -->
         </div>
         <div id="fraseResultadoTiro" style="text-align: center;">
-            <!-- <button onclick="resetGame()">Resetar</button> -->
         </div>
     </main>
 </body>
@@ -78,7 +73,6 @@
             shot()
         }, 3000)
     }
-    console.log(posicaoBalas)
     function shot(x) {
         mostrarBalas.innerHTML =
             `
@@ -92,7 +86,6 @@
             } else {
                 fraseResultadoTiro.innerHTML = '<p>Bala Falsa... Sua vez novamente</p>'
                 posicaoBalas.pop()
-                console.log(posicaoBalas)
             }
         } else if (x == 1) {
             if (posicaoBalas[posicaoBalas.length - 1] == 0) {
@@ -102,7 +95,6 @@
                 fraseResultadoTiro.innerHTML = '<p>Bala Falsa... É... a vez <b>Dele</b>...</p>'
                 mostrarBalas.innerHTML = ""
                 posicaoBalas.pop()
-                console.log(posicaoBalas)
                 setTimeout(() => {
                     dealerRound()
                 }, 2000)
@@ -137,10 +129,9 @@
                             fraseResultadoTiro.innerHTML = '<p>Bala Falsa. É sua vez</p>'
                             mostrarBalas.innerHTML = ""
                             posicaoBalas.pop()
-                            console.log(posicaoBalas)
                             setTimeout(() => {
                                 shot()
-                            }, 4000)
+                            }, 3000)
                         }
                     }, 4000)
                 }, 1000)
@@ -153,14 +144,13 @@
                     } else {
                         fraseResultadoTiro.innerHTML = '<p>Bala Falsa... Ele joga novamente</p>'
                         posicaoBalas.pop()
-                        console.log(posicaoBalas)
                         setTimeout(() => {
                             dealerRound()
                         }, 5000);
                     }
                 }, 4000)
             }
-        }, 4000)
+        }, 5000)
     }
 
 </script>
