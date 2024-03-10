@@ -6,6 +6,6 @@ As sintaxes de Javascript:
 - .slice
 - .setTimeout
 - Math.floor
-- Math.random
+- Math.random 
 Foram descobertas durante o desenvolvimento, então podem não estar de melhor maneira escrita.
 Foi um interresante desenvolvimento.
