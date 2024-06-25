@@ -9,148 +9,356 @@
 </head>
 
 <body>
-    <header style="text-align: center;">
-        <h1>BuckShot</h1>
-        <p>Ao clicar em "Começar" será exibido, por 3 segundos, as balas que estaram na arma, sendo que as vermelhas são
-            balas verdadeiras e as azuis balas falsas. Assim, você poderá escolher entre atirar em si mesmo ou em seu
-            inimigo.</p>
-        <p>Caso atire em si mesmo e a munição que estiver na arma for falsa, você podera jogar novamente, caso a bala
-            for verdadeira, você morre.</p>
-        <p>Caso atire em seu inimigo, se a bala for verdadeira, ele morrera, caso não, sera a vez dele fazer a escolha
-            de atirar em si mesmo, ou te balear.</p>
-        <hr>
-    </header>
-    <main>
-        <div id="mostrarBalas" style="display: flex;flex-direction: row;justify-content: center;gap: 2px;">
-            <button onclick="definirBalas()">Começar</button>
+
+    <div id="audioDiv">
+        <div onmouseover="aparecerVolumeSelector()" onmouseleave="sumirVolumeSelector()">
+            <img src="img/volume.png" id="volumeIcon">
+            <div id="selectorVolumeDiv">
+                <input type="range" min="0" max="1" step="0.05" id="volumeSelector" onclick="configurarVolume()">
+            </div>
         </div>
-        <div id="fraseResultadoTiro" style="text-align: center;">
+        <audio id="shotAudio" preload>
+            <source src="audios/gunShot.mp3">
+        </audio>
+        <audio id="fakeShotAudio" preload>
+            <source src="audios/fakeGunShot.mp3">
+        </audio>
+        <audio id="rechargeAudio" preload>
+            <source src="audios/gunLoad.mp3">
+        </audio>
+    </div>
+    <div id="mainFrame">
+        <div id="fraseResultadoTiro">
         </div>
-    </main>
+        <div id="mostrarBalas">
+        </div>
+    </div>
+
+    <div id="divTutorial">
+        <div id="containerTutorial">
+            <h1>Buck<span style="color: red;">Shot</span></h1>
+            <p>Ao clicar em "<span style="color: red;font-family: fantasy;font-size: 18px;">Começar</span>", as balas da
+                arma serão exibidas por 3 segundos. As balas vermelhas são reais e as
+                azuis são falsas. Em seguida, você poderá escolher entre atirar em si mesmo ou no seu inimigo.</p>
+            <p>Se você atirar em si mesmo e a bala for falsa, você terá uma nova chance de jogar. Se a bala for real,
+                você morrerá.</p>
+            <p>Se você atirar no inimigo e a bala for real, ele morrerá. Se a bala for falsa, será a vez dele escolher
+                entre atirar em si mesmo ou em você.
+            </p>
+            <button onclick="resetGame()">Começar</button>
+        </div>
+    </div>
+
+    <footer>
+        <div id="containerLifes">
+            <div>
+                <div class="lifeTextDiv">
+                    <h1>You:</h1>
+                </div>
+                <div id="lifePlayer" class="lifes">
+                    <img src="" id="heart1Player">
+                    <img src="" id="heart2Player">
+                    <img src="" id="heart3Player">
+                </div>
+            </div>
+            <div>
+                <div class="lifeTextDiv">
+                    <h1>Dealer:</h1>
+                </div>
+                <div id="lifeDealer" class="lifes">
+                    <img src="" id="heart1Dealer">
+                    <img src="" id="heart2Dealer">
+                    <img src="" id="heart3Dealer">
+                </div>
+            </div>
+        </div>
+    </footer>
 </body>
 
 </html>
 
 <script>
-    var posicaoBalas = []
-    var balasVerdadeiras = 0
-    var decisao = 69
-    var numeroDeBalas = Math.floor(Math.random() * 6) + 2;
-
-    function resetGame(){
+    volumeSelector.value = 1
+    function resetGame() {
+        mostrarBalas.style.display = "flex"
+        let lifeTexts = document.getElementsByClassName("lifeTextDiv")
+        lifeTexts[0].style.display = "block"
+        lifeTexts[1].style.display = "block"
+        divTutorial.style.display = "none"
         posicaoBalas = []
         balasVerdadeiras = 0
         decisao = 69
         numeroDeBalas = Math.floor(Math.random() * 6) + 2;
         fraseResultadoTiro.innerHTML = ""
-        mostrarBalas.innerHTML = ""
+        vidasDealer = 3
+        vidasPlayer = 3
+        continuarJogo = true
+        atualizarVidas()
         definirBalas()
     }
 
-    function definirBalas() {
-        for (var x = 1; x <= numeroDeBalas; x++) {
+    // Função que define as munições do jogo
+    function definirBalas(dealerJoga) {
+        atualizarVidas()
+        aleatorizaBalas()
+        recarregarEMostrarBalas()
+        setTimeout(() => {
+            console.log("Balas foram mostradas, escondidas e agora se decide de quem é o turno")
+            mostrarBalas.innerHTML = ""
+            if (dealerJoga == 1) {
+                dealerRound()
+                return
+            } else {
+                playerRound()
+                return
+            }
+        }, 3000)
+        console.log("Acaba o sorteio de balas")
+    }
+
+    function aleatorizaBalas() {
+        balasVerdadeiras = 0
+        numeroDeBalas = Math.floor(Math.random() * 6) + 2;
+        for (let x = 1; x <= numeroDeBalas; x++) {
             if ((Math.floor(Math.random() * 2)) == 1) {
                 posicaoBalas.push(1)
             } else {
                 posicaoBalas.push(0)
+                balasVerdadeiras += 1
             }
         }
-        var balasOrganizadas = posicaoBalas.slice().sort()
-        for (var x = 0; x <= numeroDeBalas - 1; x++) {
+        // garante que tenha pelo menos uma bala Falsa 
+        if (balasVerdadeiras == numeroDeBalas) {
+            let posicaoBalaMeioCartucho = Math.round(numeroDeBalas / 2)
+            posicaoBalas[posicaoBalaMeioCartucho] = 1
+            balasVerdadeiras--
+        }
+
+        // garante que tenha pelo menos uma bala Verdadeira
+        if (balasVerdadeiras == 0) {
+            let posicaoBalaMeioCartucho = Math.round(numeroDeBalas / 2)
+            posicaoBalas[posicaoBalaMeioCartucho] = 0
+            balasVerdadeiras += 1
+        }
+    }
+
+    function recarregarEMostrarBalas() {
+        playAudios("recharge")
+        // Organiza as balas em outra variavel, sem alterar a array original
+        let balasOrganizadas = posicaoBalas.slice().sort()
+
+        // Troca os zeros e ums da array por elementos html de imagem
+        for (let x = 0; x <= numeroDeBalas - 1; x++) {
             if (balasOrganizadas[x] == 1) {
                 balasOrganizadas[x] = `<img src="img/blueBullet.png" height="200px">`
             } else {
                 balasOrganizadas[x] = `<img src="img/redBullet.png" height="200px">`
-                balasVerdadeiras++
             }
         }
 
-        mostrarBalas.innerHTML =
-            `
-        ${balasOrganizadas.join("")}
-        `
-        setTimeout(() => {
-            shot()
-        }, 3000)
+        //Exibe as imagens das munições organizadas na tela
+        mostrarBalas.innerHTML = `${balasOrganizadas.join("")}`
     }
-    function shot(x) {
-        mostrarBalas.innerHTML =
-            `
-        <button onclick="shot(0)">Atirar em si mesmo</button>
-        <button onclick="shot(1)">Atirar no inimigo</button>
-        `
-        if (x == 0) {
+
+
+    // Função que permite o player fazer as ações
+    function playerRound(alvo) {
+        let balaFalsa = false
+        console.log("Começa turno do Player")
+        // Recarrega caso acabe a munição (reinicia jogo)
+        fraseResultadoTiro.innerHTML = `
+        <button onclick="playerRound(0)" id="btnSelfShot">Atirar em si mesmo</button>
+        <button onclick="playerRound(1)" id="btnShot">Atirar no inimigo</button>`
+        // Toma decições caso o alvo for a si mesmo
+        if (alvo == 0) {
+
+            // Caso a bala que estiver no pente for verdadeira
             if (posicaoBalas[posicaoBalas.length - 1] == 0) {
-                fraseResultadoTiro.innerHTML = '<p>Você Morreu</p><br><button onclick="resetGame()">Resetar</button>'
-                mostrarBalas.innerHTML = ""
-            } else {
+                fraseResultadoTiro.innerHTML = '<p>A arma atira, ainda é sua vez</p>'
+                playAudios("shot")
+                posicaoBalas.pop()
+                console.log(posicaoBalas)
+                vidasPlayer--
+                atualizarVidas()
+                if (continuarJogo) {
+                    verifyCargaContinuarRound(0)
+                }
+            }
+
+            // Caso a bala que estiver no pente for falsa
+            else {
                 fraseResultadoTiro.innerHTML = '<p>Bala Falsa... Sua vez novamente</p>'
+                playAudios("fakeShot")
                 posicaoBalas.pop()
+                console.log(posicaoBalas)
+                verifyCargaContinuarRound(0)
             }
-        } else if (x == 1) {
+        }
+
+        else if (alvo == 1) {
             if (posicaoBalas[posicaoBalas.length - 1] == 0) {
-                fraseResultadoTiro.innerHTML = '<p>A arma atira... Você venceu</p><br><button onclick="resetGame()">Resetar</button>'
-                mostrarBalas.innerHTML = ""
-            } else {
-                fraseResultadoTiro.innerHTML = '<p>Bala Falsa... É... a vez <b>Dele</b>...</p>'
-                mostrarBalas.innerHTML = ""
+                fraseResultadoTiro.innerHTML = '<p>A arma atira, é a vez dele</p>'
+                playAudios("shot")
                 posicaoBalas.pop()
-                setTimeout(() => {
-                    dealerRound()
-                }, 2000)
+                console.log(posicaoBalas)
+                vidasDealer--
+                atualizarVidas()
+                if (continuarJogo) {
+                    verifyCargaContinuarRound(1)
+                }
+            }
+
+            else {
+                fraseResultadoTiro.innerHTML = '<p>Bala Falsa... É... a vez <b>Dele</b>...</p>'
+                playAudios("fakeShot")
+                posicaoBalas.pop()
+                console.log(posicaoBalas)
+                verifyCargaContinuarRound(1)
             }
         }
-        if (posicaoBalas.length == 0) {
-            fraseResultadoTiro.innerHTML = "Recarregando Arma..."
-            setTimeout(() => {
-                definirBalas()
-            }, 1000)
-        }
+        console.log("Acaba turno do player")
     }
+
     function dealerRound() {
         fraseResultadoTiro.innerHTML = "<p>Ele pega a arma e começa a pensar...</p>"
         setTimeout(() => {
-            if (balasVerdadeiras >= (posicaoBalas.length - balasVerdadeiras)) {
-                decisao = 1
-            } else {
-                decisao = 0
-            }
-            fraseResultadoTiro.innerHTML = "<p>A decisão foi tomada</p>"
-        }, 3000)
-        setTimeout(() => {
-            if (decisao == 1) {
-                setTimeout(() => {
+            tomarDecisao()
+            setTimeout(() => {
+                if (decisao == 1) {
                     fraseResultadoTiro.innerHTML = "<p>Ele aponta a arma para você...</p>"
                     setTimeout(() => {
                         if (posicaoBalas[posicaoBalas.length - 1] == 0) {
-                            fraseResultadoTiro.innerHTML = '<p>A arma atira... Você Morreu</p><br><button onclick="resetGame()">Resetar</button>'
-                            mostrarBalas.innerHTML = ""
-                        } else {
-                            fraseResultadoTiro.innerHTML = '<p>Bala Falsa. É sua vez</p>'
-                            mostrarBalas.innerHTML = ""
+                            fraseResultadoTiro.innerHTML = '<p>A arma atira... É a sua vez</p>'
+                            playAudios("shot")
                             posicaoBalas.pop()
-                            setTimeout(() => {
-                                shot()
-                            }, 3000)
+                            vidasPlayer--
+                            atualizarVidas()
+                            if (continuarJogo) {
+                                verifyCargaContinuarRound(0)
+                            }
+                        }
+                        else {
+                            fraseResultadoTiro.innerHTML = '<p>Bala Falsa. É sua vez</p>'
+                            playAudios("fakeShot")
+                            posicaoBalas.pop()
+                            console.log(posicaoBalas)
+                            verifyCargaContinuarRound(0)
                         }
                     }, 4000)
-                }, 1000)
-            } else {
-                fraseResultadoTiro.innerHTML = "<p>Ele aponta a arma para a própria cabeça...</p>"
-                setTimeout(() => {
-                    if (posicaoBalas[posicaoBalas.length - 1] == 0) {
-                        fraseResultadoTiro.innerHTML = '<p>A arma dispara... Você venceu</p><br><button onclick="resetGame()">Resetar</button>'
-                        mostrarBalas.innerHTML = ""
-                    } else {
-                        fraseResultadoTiro.innerHTML = '<p>Bala Falsa... Ele joga novamente</p>'
-                        posicaoBalas.pop()
-                        setTimeout(() => {
-                            dealerRound()
-                        }, 5000);
-                    }
-                }, 4000)
+                }
+                else {
+                    fraseResultadoTiro.innerHTML = "<p>Ele aponta a arma para a própria cabeça...</p>"
+                    setTimeout(() => {
+                        if (posicaoBalas[posicaoBalas.length - 1] == 0) {
+                            fraseResultadoTiro.innerHTML = '<p>A arma dispara... Ainda é a vez Dele</p>'
+                            playAudios("shot")
+                            posicaoBalas.pop()
+                            vidasDealer--
+                            atualizarVidas()
+                            if (continuarJogo) {
+                                verifyCargaContinuarRound(1)
+                            }
+                        }
+                        else {
+                            fraseResultadoTiro.innerHTML = '<p>Bala Falsa... Ele joga novamente</p>'
+                            playAudios("fakeShot")
+                            posicaoBalas.pop()
+                            console.log(posicaoBalas)
+                            verifyCargaContinuarRound(1)
+                        }
+                    }, 4000)
+                }
+            }, 2000)
+        }, 1000)
+    }
+
+    function tomarDecisao() {
+        if ((balasVerdadeiras / posicaoBalas.length) >= 0.5) {
+            decisao = 1
+        }
+        else {
+            decisao = 0
+        }
+    }
+
+
+    function verifyCargaContinuarRound(switchRound) {
+        setTimeout(() => {
+            let time = 100
+            if (posicaoBalas.length == 0) {
+                fraseResultadoTiro.innerHTML = 'Novas Balas:'
+                aleatorizaBalas()
+                recarregarEMostrarBalas()
+                time += 2000
             }
-        }, 5000)
+
+            setTimeout(() => {
+                mostrarBalas.innerHTML = ""
+                if (switchRound == 1) {
+                    dealerRound()
+                } else {
+                    playerRound()
+                }
+            }, time);
+        }, 1500);
+
+    }
+
+
+    function atualizarVidas() {
+        balasVerdadeiras--
+        lifeDealer.innerHTML = ""
+        lifePlayer.innerHTML = ""
+        for (let qtdImagens = 1; qtdImagens <= vidasDealer; qtdImagens++) {
+            lifeDealer.innerHTML += `<img src="img/UndertaleHeart.png" class="hearts">`
+        }
+        for (let qtdImagens = 1; qtdImagens <= vidasPlayer; qtdImagens++) {
+            lifePlayer.innerHTML += `<img src="img/UndertaleHeart.png" class="hearts">`
+        }
+        verificaSeAlguemMorreu()
+    }
+
+    function verificaSeAlguemMorreu() {
+        if (vidasPlayer == 0) {
+            fraseResultadoTiro.innerHTML = '<p>Você Morreu</p><br><button onclick="resetGame()">Resetar</button>'
+            continuarJogo = false
+        }
+        if (vidasDealer == 0) {
+            continuarJogo = false
+            fraseResultadoTiro.innerHTML = '<p>O Dealer Morreu, Você Venceu</p><br><button onclick="resetGame()">Resetar</button>'
+        }
+    }
+
+
+    function playAudios(audioName) {
+        if (audioName == "shot") {
+            shotAudio.currentTime = 0
+            shotAudio.pause()
+            shotAudio.play()
+        } else if (audioName == "fakeShot") {
+            fakeShotAudio.currentTime = 0
+            fakeShotAudio.pause()
+            fakeShotAudio.play()
+        } else if (audioName == "recharge") {
+            rechargeAudio.currentTime = 0
+            rechargeAudio.pause()
+            rechargeAudio.play()
+        }
+    }
+
+    function configurarVolume(){
+        let novoVolume = volumeSelector.value
+        shotAudio.volume = novoVolume
+        fakeShotAudio.volume = novoVolume
+        rechargeAudio.volume = novoVolume
+    }
+
+    function aparecerVolumeSelector(){
+        selectorVolumeDiv.style.width = "129px"
+    }
+
+    function sumirVolumeSelector(){
+        selectorVolumeDiv.style.width = "0px"
     }
 
 </script>
